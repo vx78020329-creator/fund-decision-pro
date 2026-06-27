@@ -92,7 +92,7 @@ app.use("/api/market", marketRouter);
 app.use("/api/analysis", analysisRouter);
 
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString(), dbPath: db.name });
+  res.json({ status: "ok", version: "v2-search-fix", timestamp: new Date().toISOString(), dbPath: db.name });
 });
 
 // Serve static frontend in production
@@ -127,3 +127,4 @@ app.listen(PORT, "0.0.0.0", () => {
     console.log(`[startup] Database has ${fundCount.c} funds, skipping initial sync`);
   }
 });
+
