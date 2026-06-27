@@ -1,4 +1,3 @@
-import { updateAllReturns1y } from "./update-returns.js";
 import { bulkUpsertFunds, bulkInsertNav, bulkInsertHoldings, getDb } from "../db/index.js";
 
 const HEADERS: Record<string, string> = {
@@ -417,10 +416,13 @@ export async function syncFundList(): Promise<number> {
       });
       await Promise.all(promises);
       syncState.processed = allCodes.length + i + batch.length;
-      if ((i + 5) % 50 === 0) console.log(`[scraper] Details: ${i + 5}/${fawait updateAllReturns1y().catch(e => console.error("[scraper] returns1y error:", e));
-    undsToDetail.length}`);
+      if ((i + 5) % 50 === 0) console.log(`[scraper] Details: ${i + 5}/${fundsToDetail.length}`);
       await sleep(100);
     }
+    console.log("[scraper] Updating 1-year returns...");
+    const { updateAllReturns1y } = await import("./update-returns.js");
+    await updateAllReturns1y().catch(e => console.error("[scraper] returns1y error:", e));
+
     syncState.phase = "Phase 3: �ֲ获取基金详情...";
     const fundsNeedingHoldings = db.prepare("SELECT f.code FROM funds f WHERE f.nav > 0 AND f.code NOT IN (SELECT DISTINCT code FROM holdings)").all() as { code: string }[];
     console.log(`[scraper] Phase 3: Fetching holdings for ${fundsNeedingHoldings.length} funds...`);
