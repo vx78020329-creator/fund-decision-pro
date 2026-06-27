@@ -1,0 +1,13 @@
+🚀 基金决策宝 API server running on port 3001
+   Database: C:\Users\86178\Documents\New project\fund-decision\server\data\fund.db
+[scraper] Auto-update started (interval: 240min)
+[callAgent-raw] {
+  "score": 70,
+  "summary": "基金规模较大流动性好，但作为混合型产品，受市场波动和选股风格影响，风险中等。",
+  "analysis": "该基金为混合型，风险等级3（中风险），规模达113.11亿元，流动性风险极低，应对申赎能力强。其主要风险源于股票市场系统性波动以及基金管理人的选股与择时能力。“质量成长”投资风格在特定市场阶段可能面临估值回调压力。整体而言，基金基本面稳健，但投资者需关注权益市场的整体走势及风格轮动带来的净值回撤风险。",
+  "signals": ["混合型基金固有的市场与利率风险", "超大规模可能对投资灵活性及业绩持续性构成一定挑战"
+[callAgent-raw] {"score":0-100,"summary":"一句话","analysis":"200字内","signals":["1","2","3","4"]}
+[callAgent-raw] {"score": 0-100的数字, "summary": "一句话概括", "analysis": "100-200字详细分析", "signals": ["信号1", "信号2", "信号3", "信号4"]}
+[callAgent-raw] {"score": 95, "summary": "基金近一年回报率卓越，显示强劲增长潜力。", "analysis": "详细正面分析...", "signals": ["信号1", "信号2", "信号3", "信号4"]}
+[callAgent-raw] {"score": 0-100的数字, "summary": "一句话概括", "analysis": "100-200字详细分析", "signals": ["信号1", "信号2", "信号3"]}
+[callAgent-raw] {"score":0-100,"summary":"一句话","analysis":"200字内","signals":["1","2","3","4"]}

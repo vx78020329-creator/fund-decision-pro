@@ -1,3 +1,4 @@
+import { updateAllReturns1y } from "./update-returns.js";
 import { bulkUpsertFunds, bulkInsertNav, bulkInsertHoldings, getDb } from "../db/index.js";
 
 const HEADERS: Record<string, string> = {
@@ -416,7 +417,8 @@ export async function syncFundList(): Promise<number> {
       });
       await Promise.all(promises);
       syncState.processed = allCodes.length + i + batch.length;
-      if ((i + 5) % 50 === 0) console.log(`[scraper] Details: ${i + 5}/${fundsToDetail.length}`);
+      if ((i + 5) % 50 === 0) console.log(`[scraper] Details: ${i + 5}/${fawait updateAllReturns1y().catch(e => console.error("[scraper] returns1y error:", e));
+    undsToDetail.length}`);
       await sleep(100);
     }
     syncState.phase = "Phase 3: �ֲ获取基金详情...";
