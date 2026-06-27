@@ -136,6 +136,14 @@ fundsRouter.post("/fix-companies", async (req, res) => {
 });
 
 // ===== Fund Detail =====
+
+// ===== Fund Search (used by portfolio add modal) =====
+fundsRouter.get("/search", (req, res) => {
+  const q = req.query.q as string;
+  if (!q || q.trim().length === 0) { res.json([]); return; }
+  const result = getFunds({ keyword: q, page: 1, pageSize: 20 });
+  res.json(result.funds);
+});
 fundsRouter.get("/:code", async (req, res) => {
   let fund = getFundByCode(req.params.code);
   if (!fund) { res.status(404).json({ error: "Fund not found" }); return; }
@@ -178,4 +186,5 @@ fundsRouter.post("/:code/sync", async (req, res) => {
     res.status(500).json({ error: "Fund sync failed" });
   }
 });
+
 
