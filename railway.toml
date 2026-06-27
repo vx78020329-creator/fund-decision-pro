@@ -6,9 +6,3 @@ startCommand = "npx tsx server/src/index.ts"
 healthcheckPath = "/api/health"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-
-# Persistent volume for SQLite database
-# Mount path must match server/src/db/index.ts dataDir: resolve(__dirname, "../../data")
-# On Railway this resolves to /app/server/data
-[[volumes]]
-mountPath = "/app/server/data"
