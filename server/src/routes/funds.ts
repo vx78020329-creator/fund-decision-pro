@@ -5,7 +5,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { updateAllReturns1y } from "../services/update-returns.js";
 import { getFunds, getFundByCode, getNavHistory, getHoldings, getSyncState, setSyncState, getDb, bulkInsertNav } from "../db/index.js";
-import { syncFundList, syncFundNav, fetchFundDetail, fetchNavHistory, fetchEastmoneyNews, getSyncProgress } from "../services/scraper.js";
+import { syncFundList, syncFundNav, fetchFundDetail, fetchNavHistory, fetchEastmoneyNews, getSyncProgress, fixCompanyNames } from "../services/scraper.js";
 
 export const fundsRouter = Router();
 
@@ -124,6 +124,17 @@ fundsRouter.get("/sync/progress", (_req, res) => {
   res.json(getSyncProgress());
 });
 
+// Fix company names (abbreviation -> Chinese)
+fundsRouter.post("/fix-companies", async (req, res) => {
+  try {
+    const limit = req.body?.limit ? Number(req.body.limit) : 500;
+    const fixed = await fixCompanyNames(limit);
+    res.json({ fixed });
+  } catch (err) {
+    res.status(500).json({ error: "Fix failed" });
+  }
+});
+
 // ===== Fund Detail =====
 fundsRouter.get("/:code", async (req, res) => {
   let fund = getFundByCode(req.params.code);
@@ -167,3 +178,4 @@ fundsRouter.post("/:code/sync", async (req, res) => {
     res.status(500).json({ error: "Fund sync failed" });
   }
 });
+

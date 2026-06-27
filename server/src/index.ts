@@ -1,4 +1,4 @@
-// Settings API - manage API keys
+﻿// Settings API - manage API keys
 import { Router } from "express";
 import { writeFileSync, readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
@@ -107,10 +107,23 @@ if (existsSync(distPath)) {
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 基金决策宝 API server running on port ${PORT}`);
+  console.log(`Fund Decision Pro API server running on port ${PORT}`);
   console.log(`   Database: ${db.name}`);
   console.log(`   Frontend: ${existsSync(distPath) ? distPath : "dev mode"}`);
 
   // Start background auto-update (every 4 hours)
   startAutoUpdate(4 * 60 * 60 * 1000);
+
+  // Auto-sync on startup if database is empty (new deployment)
+  const fundCount = db.prepare("SELECT COUNT(*) as c FROM funds").get() as { c: number };
+  if (fundCount.c === 0) {
+    console.log("[startup] Database empty, starting initial sync...");
+    import("./services/scraper.js").then(({ syncFundList }) => {
+      syncFundList().then(count => {
+        console.log(`[startup] Initial sync complete: ${count} funds`);
+      }).catch(err => console.error("[startup] Sync error:", err));
+    });
+  } else {
+    console.log(`[startup] Database has ${fundCount.c} funds, skipping initial sync`);
+  }
 });

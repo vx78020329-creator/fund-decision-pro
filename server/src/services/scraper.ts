@@ -1,4 +1,4 @@
-import { bulkUpsertFunds, bulkInsertNav, bulkInsertHoldings, getDb } from "../db/index.js";
+﻿import { bulkUpsertFunds, bulkInsertNav, bulkInsertHoldings, getDb } from "../db/index.js";
 
 const HEADERS: Record<string, string> = {
   "Referer": "http://fund.eastmoney.com/",
@@ -73,7 +73,7 @@ function parseJsonp(text: string): unknown {
   return JSON.parse(text.slice(s + 1, e));
 }
 
-// ── Sync Progress Tracking ──────────────────────────────
+// 鈹€鈹€ Sync Progress Tracking 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 let syncState = {
   running: false,
   total: 0,
@@ -85,7 +85,7 @@ let syncState = {
 
 export function getSyncProgress() { return { ...syncState }; }
 
-// ── Fetch all fund codes from eastmoney ─────────────────
+// 鈹€鈹€ Fetch all fund codes from eastmoney 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 export async function fetchAllFundCodes(): Promise<Array<{ code: string; abbr: string; name: string; type: string }>> {
   try {
     const res = await fetch("http://fund.eastmoney.com/js/fundcode_search.js", { headers: HEADERS });
@@ -100,7 +100,7 @@ export async function fetchAllFundCodes(): Promise<Array<{ code: string; abbr: s
   }
 }
 
-// ── Fetch NAV history ───────────────────────────────────
+// 鈹€鈹€ Fetch NAV history 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 export async function fetchNavHistory(code: string, _pageSize = 20, maxPages = 1): Promise<Array<{ date: string; nav: number; return: number; accNav: number }>> {
   const allResults: Array<{ date: string; nav: number; return: number; accNav: number }> = [];
   const PAGE_SIZE = 20;
@@ -127,7 +127,7 @@ export async function fetchNavHistory(code: string, _pageSize = 20, maxPages = 1
   return allResults;
 }
 
-// ── Fetch fund detail (manager, fees, size) ─────────────
+// 鈹€鈹€ Fetch fund detail (manager, fees, size) 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 export async function fetchFundDetail(code: string): Promise<{
   manager: string; company: string; size: number;
   fees: { manage: number; custody: number };
@@ -170,29 +170,30 @@ export async function fetchFundDetail(code: string): Promise<{
       }
     }
 
-    // Extract company
-    const compMatch = text.match(/Data_assetAllocation[\s\S]*?name[\s:]*"[^"]*?([\u4e00-\u9fa5]+\u57fa\u91d1)/);
-    if (compMatch) company = compMatch[1];
-    if (!company) {
-      const compMatch2 = text.match(/fS_name[\s=]*"([^"]+)"/);
-      if (compMatch2) {
-        // Extract company from fund name pattern
-      }
-    }
-
     // Extract fees
     const f = text.match(/fund_Rate\s*=\s*"([^"]*)"/);
     if (f) { const p = f[1].split(","); manageFee = parseFloat(p[0]) || 0; custodyFee = parseFloat(p[1]) || 0; }
 
-    // Fetch establishment date and benchmark from fund detail page
+    // Fetch company, size, establishment date and benchmark from fund detail page
     let establishDate = "";
     let benchmark = "";
     try {
       const detailRes = await fetch(`https://fundf10.eastmoney.com/jbgk_${code}.html`, { headers: HEADERS });
       const detailText = await detailRes.text();
-      const edMatch = detailText.match(/\u6210\u7acb\u65e5\u671f[^]*?(\d{4}[-\/\/]\d{2}[-\/\/]\d{2})/);
+      // Company name
+      const compMatch = detailText.match(/\u57FA\u91D1\u7BA1\u7406\u4EBA[\s\S]*?<a[^>]*>([^<]+)<\/a>/);
+      if (compMatch) company = compMatch[1].trim();
+      // Fund size (亿元)
+      const szMatch = detailText.match(/\u57FA\u91D1\u89C4\u6A21[\s\S]*?([\d.]+)\u4EBF/);
+      if (szMatch) size = parseFloat(szMatch[1]) || 0;
+      // Manager name
+      const mgrMatch = detailText.match(/\u57FA\u91D1\u7ECF\u7406[\s\S]*?<a[^>]*>([^<]+)<\/a>/);
+      if (mgrMatch && !manager) manager = mgrMatch[1].trim();
+      // Establishment date
+      const edMatch = detailText.match(/\u6210\u7ACB\u65E5\u671F[\s\S]*?(\d{4}[-\/]\d{2}[-\/]\d{2})/);
       if (edMatch) establishDate = edMatch[1];
-      const bmMatch = detailText.match(/<th[^>]*>\s*\u4e1a\u7ee9\u6bd4\u8f83\u57fa\u51c6\s*<\/th>\s*<td[^>]*>\s*([\s\S]*?)\s*<\/td/);
+      // Benchmark
+      const bmMatch = detailText.match(/<th[^>]*>\s*\u4E1A\u7EE9\u6BD4\u8F83\u57FA\u51C6\s*<\/th>\s*<td[^>]*>\s*([\s\S]*?)\s*<\/td/);
       if (bmMatch) benchmark = bmMatch[1].trim().replace(/<[^>]+>/g, '');
     } catch {}
 
@@ -235,21 +236,21 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
   }
 
   function classify(title: string): { tag: string; important: boolean } {
-    if (/利率|降准|降息|LPR|MLF|国债|货币|流动性|GDP|PMI|CPI/.test(title)) return { tag: "宏观", important: true };
-    if (/政府|国务院|发改委|监管|政策/.test(title)) return { tag: "政策", important: true };
-    if (/ETF|LOF|公募|私募|基金|发行/.test(title)) return { tag: "基金", important: false };
-    if (/新能源|光伏|电池|医药|半导体|芯片|汽车|人工智能|AI/.test(title)) return { tag: "行业", important: false };
-    if (/A股|上证|深证|沪深|创业板|涨停|跌停|北向资金/.test(title)) return { tag: "股市", important: false };
-    return { tag: "综合", important: false };
+    if (/鍒╃巼|闄嶅噯|闄嶆伅|LPR|MLF|鍥藉€簗璐у竵|娴佸姩鎬GDP|PMI|CPI/.test(title)) return { tag: "瀹忚", important: true };
+    if (/鏀垮簻|鍥藉姟闄鍙戞敼濮攟鐩戠|鏀跨瓥/.test(title)) return { tag: "鏀跨瓥", important: true };
+    if (/ETF|LOF|鍏嫙|绉佸嫙|鍩洪噾|鍙戣/.test(title)) return { tag: "鍩洪噾", important: false };
+    if (/鏂拌兘婧恷鍏変紡|鐢垫睜|鍖昏嵂|鍗婂浣搢鑺墖|姹借溅|浜哄伐鏅鸿兘|AI/.test(title)) return { tag: "琛屼笟", important: false };
+    if (/A鑲涓婅瘉|娣辫瘉|娌繁|鍒涗笟鏉縷娑ㄥ仠|璺屽仠|鍖楀悜璧勯噾/.test(title)) return { tag: "鑲″競", important: false };
+    return { tag: "缁煎悎", important: false };
   }
 
   function formatTime(ts: number): string {
     const d = new Date(ts * 1000);
     const now = Date.now();
     const diff = now - d.getTime();
-    if (diff < 60000) return "刚刚";
-    if (diff < 3600000) return Math.floor(diff / 60000) + "分钟前";
-    if (diff < 86400000) return Math.floor(diff / 3600000) + "小时前";
+    if (diff < 60000) return "鍒氬垰";
+    if (diff < 3600000) return Math.floor(diff / 60000) + "鍒嗛挓鍓?;
+    if (diff < 86400000) return Math.floor(diff / 3600000) + "灏忔椂鍓?;
     return d.toLocaleDateString("zh-CN") + " " + d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
   }
 
@@ -280,7 +281,7 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
           summary: text.length > 200 ? text.slice(0, 200) + "..." : text,
           content: text,
           time: formatTime(item.display_time),
-          source: "华尔街见闻 7x24",
+          source: "鍗庡皵琛楄闂?7x24",
           tag, important,
           keyPoints: [text.slice(0, 60)],
           url: item.uri || "",
@@ -311,7 +312,7 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
       const title = m[2].trim();
       if (title.length < 8) continue;
       const { tag, important } = classify(title);
-      add({ title, summary: title, content: title, time: new Date().toLocaleString("zh-CN"), source: "东方财富", tag, important, keyPoints: [title], url: m[1] });
+      add({ title, summary: title, content: title, time: new Date().toLocaleString("zh-CN"), source: "涓滄柟璐㈠瘜", tag, important, keyPoints: [title], url: m[1] });
     }
   } catch {}
 
@@ -324,7 +325,7 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
       const title = m[2].trim();
       if (title.length < 8) continue;
       const { tag, important } = classify(title);
-      add({ title, summary: title, content: title, time: new Date().toLocaleString("zh-CN"), source: "东方财富股票", tag, important, keyPoints: [title], url: m[1] });
+      add({ title, summary: title, content: title, time: new Date().toLocaleString("zh-CN"), source: "涓滄柟璐㈠瘜鑲＄エ", tag, important, keyPoints: [title], url: m[1] });
     }
   } catch {}
 
@@ -337,7 +338,7 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
       const title = m[2].trim();
       if (title.length < 5) continue;
       const { tag, important } = classify(title);
-      add({ title, summary: title, content: title, time: new Date().toLocaleString("zh-CN"), source: "东方财富基金", tag, important, keyPoints: [title], url: m[1] });
+      add({ title, summary: title, content: title, time: new Date().toLocaleString("zh-CN"), source: "涓滄柟璐㈠瘜鍩洪噾", tag, important, keyPoints: [title], url: m[1] });
     }
   } catch {}
 
@@ -351,7 +352,7 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
         if (title.length < 5) continue;
         const { tag, important } = classify(title);
         const ts = parseInt(item.ctime) || 0;
-        add({ title, summary: title, content: title, time: ts > 0 ? formatTime(ts) : new Date().toLocaleString("zh-CN"), source: "新浪财经", tag, important, keyPoints: [title], url: item.url || "" });
+        add({ title, summary: title, content: title, time: ts > 0 ? formatTime(ts) : new Date().toLocaleString("zh-CN"), source: "鏂版氮璐㈢粡", tag, important, keyPoints: [title], url: item.url || "" });
       }
     }
   } catch {}
@@ -365,7 +366,7 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
         const title = (item.title || "").trim();
         if (title.length < 5) continue;
         const { tag, important } = classify(title);
-        add({ title, summary: title, content: title, time: item.ctime || new Date().toLocaleString("zh-CN"), source: "同花顺", tag, important, keyPoints: [title], url: item.url || "" });
+        add({ title, summary: title, content: title, time: item.ctime || new Date().toLocaleString("zh-CN"), source: "鍚岃姳椤?, tag, important, keyPoints: [title], url: item.url || "" });
       }
     }
   } catch {}
@@ -375,14 +376,14 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
 }
 export async function syncFundList(): Promise<number> {
   if (syncState.running) { console.log("[scraper] Sync already running"); return 0; }
-  syncState = { running: true, total: 0, processed: 0, phase: "????????��?", lastSyncTime: "", error: "" };
+  syncState = { running: true, total: 0, processed: 0, phase: "????????锟斤拷?", lastSyncTime: "", error: "" };
   try {
     console.log("[scraper] Phase 1: Fetching all fund codes...");
     const allCodes = await fetchAllFundCodes();
     if (allCodes.length === 0) { syncState.running = false; return 0; }
     syncState.total = allCodes.length;
     console.log(`[scraper] Found ${allCodes.length} funds total`);
-    syncState.phase = "同步中...?";
+    syncState.phase = "鍚屾涓?..?";
     const BATCH = 500;
     for (let i = 0; i < allCodes.length; i += BATCH) {
       const batch = allCodes.slice(i, i + BATCH);
@@ -423,7 +424,7 @@ export async function syncFundList(): Promise<number> {
     const { updateAllReturns1y } = await import("./update-returns.js");
     await updateAllReturns1y().catch(e => console.error("[scraper] returns1y error:", e));
 
-    syncState.phase = "Phase 3: �ֲ获取基金详情...";
+    syncState.phase = "Phase 3: 锟街茶幏鍙栧熀閲戣鎯?..";
     const fundsNeedingHoldings = db.prepare("SELECT f.code FROM funds f WHERE f.nav > 0 AND f.code NOT IN (SELECT DISTINCT code FROM holdings)").all() as { code: string }[];
     console.log(`[scraper] Phase 3: Fetching holdings for ${fundsNeedingHoldings.length} funds...`);
     syncState.total = allCodes.length + fundsNeedingHoldings.length;
@@ -441,7 +442,7 @@ export async function syncFundList(): Promise<number> {
       if ((i + 5) % 50 === 0) console.log(`[scraper] Holdings: ${i + 5}/${fundsNeedingHoldings.length}`);
       await sleep(150);
     }
-    syncState.phase = "���";
+    syncState.phase = "锟斤拷锟?;
     syncState.lastSyncTime = new Date().toISOString();
     syncState.running = false;
     console.log(`[scraper] Full sync complete: ${allCodes.length} funds, ${detailCount} details, ${holdingsCount} holdings`);
@@ -502,6 +503,36 @@ export async function syncFundNav(code: string, maxPages = 30): Promise<number> 
   return navs.length;
 }
 
+// ===== Batch fix company names (abbreviation -> Chinese name) =====
+export async function fixCompanyNames(limit = 500): Promise<number> {
+  const db = getDb();
+  // Find funds with all-uppercase company names (abbreviations)
+  const funds = db.prepare("SELECT code, company FROM funds WHERE company IS NOT NULL AND company != '' AND company GLOB '[A-Z]*' ORDER BY code LIMIT ?").all(limit) as { code: string; company: string }[];
+  if (funds.length === 0) return 0;
+  console.log(`[scraper] Fixing company names for ${funds.length} funds...`);
+  let fixed = 0;
+  const stmt = db.prepare("UPDATE funds SET company = ? WHERE code = ?");
+  for (let i = 0; i < funds.length; i += 5) {
+    const batch = funds.slice(i, i + 5);
+    const promises = batch.map(async (f) => {
+      try {
+        const res = await fetch(`https://fundf10.eastmoney.com/jbgk_${f.code}.html`, { headers: HEADERS });
+        const text = await res.text();
+        const m = text.match(/\u57FA\u91D1\u7BA1\u7406\u4EBA[\s\S]*?<a[^>]*>([^<]+)<\/a>/);
+        if (m && m[1]) {
+          stmt.run(m[1].trim(), f.code);
+          fixed++;
+        }
+      } catch {}
+    });
+    await Promise.all(promises);
+    if ((i + 5) % 50 === 0) console.log(`[scraper] Company fix: ${i + 5}/${funds.length}`);
+    await sleep(100);
+  }
+  console.log(`[scraper] Company fix done: ${fixed}/${funds.length}`);
+  return fixed;
+}
+
 let autoUpdateTimer: ReturnType<typeof setInterval> | null = null;
 export function startAutoUpdate(intervalMs = 4 * 60 * 60 * 1000) {
   if (autoUpdateTimer) return;
@@ -516,5 +547,7 @@ export function startAutoUpdate(intervalMs = 4 * 60 * 60 * 1000) {
 export function stopAutoUpdate() {
   if (autoUpdateTimer) { clearInterval(autoUpdateTimer); autoUpdateTimer = null; }
 }
+
+
 
 
