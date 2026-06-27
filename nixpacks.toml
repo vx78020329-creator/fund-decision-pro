@@ -1,0 +1,8 @@
+﻿[phases.setup]
+nixPkgs = ["...", "python3", "gcc", "gnumake"]
+
+[phases.build]
+cmds = ["npx vite build"]
+
+[start]
+cmd = "npx tsx server/src/index.ts"
