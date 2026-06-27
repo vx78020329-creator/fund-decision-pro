@@ -1,0 +1,1 @@
+web: npx tsx server/src/index.ts
