@@ -1,4 +1,4 @@
-import { getDb } from "../db/index.js";
+﻿import { getDb } from "../db/index.js";
 
 const HEADERS: Record<string, string> = {
   "Referer": "http://fund.eastmoney.com/",
@@ -17,7 +17,7 @@ export async function updateAllReturns1y(): Promise<number> {
   for (let page = 1; page <= 280; page++) {
     try {
       const url = "https://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=all&rs=&gs=0&sc=1nzf&st=desc&ed=" + today + "&qdii=&tabSubtype=,,,,,&pi=" + page + "&pn=" + pageSize + "&dx=1&v=0." + page;
-      const resp = await fetch(url, { headers: HEADERS });
+      const resp = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(30000) });
       const text = await resp.text();
       const dataMatch = text.match(/datas:\[(.*?)\]/s);
       if (!dataMatch || !dataMatch[1]) break;
@@ -51,3 +51,4 @@ export async function updateAllReturns1y(): Promise<number> {
   console.log("[returns1y] Updated " + updated + " funds with 1Y returns");
   return updated;
 }
+

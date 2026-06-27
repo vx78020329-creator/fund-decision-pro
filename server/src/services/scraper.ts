@@ -88,7 +88,7 @@ export function getSyncProgress() { return { ...syncState }; }
 // 鈹€鈹€ Fetch all fund codes from eastmoney 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 export async function fetchAllFundCodes(): Promise<Array<{ code: string; abbr: string; name: string; type: string }>> {
   try {
-    const res = await fetch("http://fund.eastmoney.com/js/fundcode_search.js", { headers: HEADERS });
+    const res = await fetch("http://fund.eastmoney.com/js/fundcode_search.js", { headers: HEADERS, signal: AbortSignal.timeout(30000) });
     const text = await res.text();
     const match = text.match(/var\s+r\s*=\s*(\[[\s\S]*?\]);/);
     if (!match) return [];
@@ -108,7 +108,7 @@ export async function fetchNavHistory(code: string, _pageSize = 20, maxPages = 1
     for (let page = 1; page <= maxPages; page++) {
       const ts = Date.now();
       const url = `https://api.fund.eastmoney.com/f10/lsjz?callback=jQuery&fundCode=${code}&pageIndex=${page}&pageSize=${PAGE_SIZE}&startDate=&endDate=&_=${ts}`;
-      const res = await fetch(url, { headers: HEADERS });
+      const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(30000) });
       const text = await res.text();
       const json = parseJsonp(text) as { Data?: { LSJZList?: Array<{ FSRQ: string; DWJZ: string; LJJZ: string; JZZZL: string }> } } | null;
       if (!json?.Data?.LSJZList || json.Data.LSJZList.length === 0) break;
@@ -134,7 +134,7 @@ export async function fetchFundDetail(code: string): Promise<{
   establishDate: string; benchmark: string;
 }> {
   try {
-    const res = await fetch(`http://fund.eastmoney.com/pingzhongdata/${code}.js`, { headers: HEADERS });
+    const res = await fetch(`http://fund.eastmoney.com/pingzhongdata/${code}.js`, { headers: HEADERS, signal: AbortSignal.timeout(30000) });
     const text = await res.text();
     let manager = "", company = "", size = 0, manageFee = 0, custodyFee = 0;
 
@@ -178,7 +178,7 @@ export async function fetchFundDetail(code: string): Promise<{
     let establishDate = "";
     let benchmark = "";
     try {
-      const detailRes = await fetch(`https://fundf10.eastmoney.com/jbgk_${code}.html`, { headers: HEADERS });
+      const detailRes = await fetch(`https://fundf10.eastmoney.com/jbgk_${code}.html`, { headers: HEADERS, signal: AbortSignal.timeout(30000) });
       const detailText = await detailRes.text();
       // Company name
       const compMatch = detailText.match(/\u57FA\u91D1\u7BA1\u7406\u4EBA[\s\S]*?<a[^>]*>([^<]+)<\/a>/);
@@ -207,7 +207,7 @@ export async function fetchFundDetail(code: string): Promise<{
 export async function fetchFundHoldings(code: string): Promise<Array<{ name: string; code: string; weight: number; industry: string }>> {
   const holdings: Array<{ name: string; code: string; weight: number; industry: string }> = [];
   try {
-    const res = await fetch(`http://fund.eastmoney.com/f10/FundArchivesDatas.aspx?type=jjcc&code=${code}&topline=10&year=&month=`, { headers: HEADERS });
+    const res = await fetch(`http://fund.eastmoney.com/f10/FundArchivesDatas.aspx?type=jjcc&code=${code}&topline=10&year=&month=`, { headers: HEADERS, signal: AbortSignal.timeout(30000) });
     const text = await res.text();
     const m = text.match(/content:"([\s\S]+)",arryear/);
     if (!m) return holdings;
@@ -547,6 +547,7 @@ export function startAutoUpdate(intervalMs = 4 * 60 * 60 * 1000) {
 export function stopAutoUpdate() {
   if (autoUpdateTimer) { clearInterval(autoUpdateTimer); autoUpdateTimer = null; }
 }
+
 
 
 
