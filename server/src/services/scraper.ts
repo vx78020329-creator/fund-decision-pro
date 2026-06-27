@@ -236,7 +236,7 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
   }
 
   function classify(title: string): { tag: string; important: boolean } {
-    if (/鍒╃巼|闄嶅噯|闄嶆伅|LPR|MLF|鍥藉€簗璐у竵|娴佸姩鎬GDP|PMI|CPI/.test(title)) return { tag: "瀹忚", important: true };
+    if (/利率|降准|降息|LPR|MLF|国债货币|流动性|GDP|PMI|CPI/.test(title)) return { tag: "宏观", important: true };
     if (/鏀垮簻|鍥藉姟闄鍙戞敼濮攟鐩戠|鏀跨瓥/.test(title)) return { tag: "鏀跨瓥", important: true };
     if (/ETF|LOF|鍏嫙|绉佸嫙|鍩洪噾|鍙戣/.test(title)) return { tag: "鍩洪噾", important: false };
     if (/鏂拌兘婧恷鍏変紡|鐢垫睜|鍖昏嵂|鍗婂浣搢鑺墖|姹借溅|浜哄伐鏅鸿兘|AI/.test(title)) return { tag: "琛屼笟", important: false };
@@ -248,9 +248,9 @@ export async function fetchEastmoneyNews(): Promise<Array<{ id: string; title: s
     const d = new Date(ts * 1000);
     const now = Date.now();
     const diff = now - d.getTime();
-    if (diff < 60000) return "鍒氬垰";
-    if (diff < 3600000) return Math.floor(diff / 60000) + "鍒嗛挓鍓?;
-    if (diff < 86400000) return Math.floor(diff / 3600000) + "灏忔椂鍓?;
+    if (diff < 60000) return "刚刚";
+    if (diff < 3600000) return Math.floor(diff / 60000) + "分钟前";
+    if (diff < 86400000) return Math.floor(diff / 3600000) + "小时前";
     return d.toLocaleDateString("zh-CN") + " " + d.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
   }
 
@@ -383,7 +383,7 @@ export async function syncFundList(): Promise<number> {
     if (allCodes.length === 0) { syncState.running = false; return 0; }
     syncState.total = allCodes.length;
     console.log(`[scraper] Found ${allCodes.length} funds total`);
-    syncState.phase = "鍚屾涓?..?";
+    syncState.phase = "同步中..";
     const BATCH = 500;
     for (let i = 0; i < allCodes.length; i += BATCH) {
       const batch = allCodes.slice(i, i + BATCH);
