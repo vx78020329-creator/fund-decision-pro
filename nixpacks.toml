@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["...", "python3", "gcc", "gnumake"]
+
+[phases.install]
+dependsOn = ["setup"]
+
+[phases.build]
+dependsOn = ["install"]
+
+[start]
+cmd = "npx tsx server/src/index.ts"
