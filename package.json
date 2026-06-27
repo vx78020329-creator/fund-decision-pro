@@ -9,7 +9,8 @@
                     "lint":  "eslint .",
                     "preview":  "vite preview",
                     "server:dev":  "tsx watch server/src/index.ts",
-                    "server:start":  "tsx server/src/index.ts"
+                    "server:start":  "tsx server/src/index.ts",
+                    "start":  "npx tsx server/src/index.ts"
                 },
     "dependencies":  {
                          "@tailwindcss/vite":  "^4.3.1",
